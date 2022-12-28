@@ -6,15 +6,17 @@ use crate::player as p;
 pub struct Ray {
     pub angle: f32,
     pub distance: f32,
+    pub height: f32,
     pub tile: u16
 }
 
 impl Ray {
-    pub fn new (angle: f32, distance: f32, tile: u16) -> Ray {
+    pub fn new (angle: f32) -> Ray {
         Ray {
             angle: angle,
-            distance: distance,
-            tile: tile
+            distance: 0.0,
+            height: 0.0,
+            tile: 0
         }
     }
 }
@@ -26,11 +28,11 @@ pub fn ray_cast (player: &p::Player, map: &m::Map) -> Vec<Ray> {
     let mut a = player.angle - s::HALF_FOV + s::TOL;
     let mut rays: Vec<Ray> = Vec::new();
 
-    while a < player.angle + s::HALF_FOV {
+    for _k in 0..s::RAY_NUMBER {
         let cos_a = a.cos();
         let sin_a = a.sin();
 
-        let mut ray = Ray::new(a, 0.0, 0);
+        let mut ray = Ray::new(a);
 
         // horizontals
         let (mut y_hor, dy) = if sin_a > 0.0 {
@@ -101,12 +103,16 @@ pub fn ray_cast (player: &p::Player, map: &m::Map) -> Vec<Ray> {
 
         // compare distances
         let dist: f32 = if dist_vert > dist_hor {
-            dist_hor
+            dist_hor * (a - player.angle).cos()
         } else {
-            dist_vert
+            dist_vert * (a - player.angle).cos()
         };
 
+        let screen_dist: f32 = s::HALF_WIDTH as f32 / s::HALF_FOV.tan();
+        let proj_height: f32 = screen_dist / (dist + s::TOL);
+
         ray.distance = dist;
+        ray.height = proj_height;
         rays.push(ray);
 
         a = a + s::DA;

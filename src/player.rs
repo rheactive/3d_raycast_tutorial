@@ -1,9 +1,8 @@
 use raylib::prelude::*;
 
-use crate::raycasting::ray_cast;
+//use crate::raycasting;
 use crate::settings as s;
 use crate::map;
-use crate::settings::TILE_SIZE;
 
 fn round_anlge (a: f32) -> f32 {
     let mut b: f32 = a;
@@ -24,7 +23,32 @@ pub fn get_cell (x: f32, y: f32) -> (i32, i32) {
 
 pub fn check_wall (x: f32, y: f32, map: &map::Map) -> bool {
     let mut check = false;
-    let (x_cell, y_cell) = get_cell(x, y);
+    let (x_cell, y_cell) = 
+        get_cell(x + s::PLAYER_RADIUS, y + s::PLAYER_RADIUS);
+    for tile in &map.tiles {
+        if tile.1 == x_cell 
+        && tile.2 == y_cell {
+            check = true
+        }
+    }
+    let (x_cell, y_cell) = 
+        get_cell(x + s::PLAYER_RADIUS, y - s::PLAYER_RADIUS);
+    for tile in &map.tiles {
+        if tile.1 == x_cell 
+        && tile.2 == y_cell {
+            check = true
+        }
+    }
+    let (x_cell, y_cell) = 
+        get_cell(x - s::PLAYER_RADIUS, y + s::PLAYER_RADIUS);
+    for tile in &map.tiles {
+        if tile.1 == x_cell 
+        && tile.2 == y_cell {
+            check = true
+        }
+    }
+    let (x_cell, y_cell) = 
+        get_cell(x - s::PLAYER_RADIUS, y - s::PLAYER_RADIUS);
     for tile in &map.tiles {
         if tile.1 == x_cell 
         && tile.2 == y_cell {
@@ -57,6 +81,10 @@ impl Player {
         let speed = s::PLAYER_SPEED * dt;
         let speed_sin = speed * sin_a;
         let speed_cos = speed * cos_a;
+
+        //let mouse_x = rl.get_mouse_x() as f32;
+        //let mouse_off = (rl.get_mouse_x() - s::HALF_WIDTH) as f32;
+        //let mouse_rot = mouse_off / s::HALF_WIDTH as f32;
 
         let keys: [bool; 6] = [
             rl.is_key_down(KeyboardKey::KEY_W),
@@ -100,6 +128,8 @@ impl Player {
             self.angle += s::PLAYER_ROT_SPEED * dt
         }
 
+        //self.angle += s::PLAYER_ROT_SPEED * dt * mouse_rot / (0.1 + mouse_rot.abs());
+
         self.angle = round_anlge(self.angle)
 
     }
@@ -109,29 +139,24 @@ impl Player {
         
     }
 
-    pub fn draw (&self, screen: &mut RaylibDrawHandle, map: &map::Map) {
-        let x = (self.x * TILE_SIZE as f32) as i32;
-        let y = (self.y * TILE_SIZE as f32) as i32;
-        let rays = ray_cast(&self, &map);
-        for ray in rays {
-            let dist = ray.distance;
-            let a = ray.angle;
-            let xe = x + (dist * a.cos() * TILE_SIZE as f32) as i32;
-            let ye = y + (dist * a.sin() * TILE_SIZE as f32) as i32;
-            screen.draw_line(x, y, 
-                xe, ye, 
-                Color::YELLOW);
-            screen.draw_circle(xe, ye, 
-                2.0, Color::RED)
-        }
-        let radius = (s::TILE_SIZE / 5) as f32;
-        //let xe = x + (self.angle.cos() * s::RES.0 as f32) as i32;
-        //let ye = y + (self.angle.sin() * s::RES.0 as f32) as i32;
-        // screen.draw_line(x, y, 
-        //     xe, ye, 
-        //     Color::BLUE);
-        screen.draw_circle(x, y, 
-            radius, 
-            Color::RED)
-    }
+    // pub fn draw (&self, screen: &mut RaylibDrawHandle, map: &map::Map) {
+    //     let x = (self.x * TILE_SIZE as f32) as i32;
+    //     let y = (self.y * TILE_SIZE as f32) as i32;
+    //     let rays = ray_cast(&self, &map);
+    //     for ray in rays {
+    //         let dist = ray.distance;
+    //         let a = ray.angle;
+    //         let xe = x + (dist * a.cos() * TILE_SIZE as f32) as i32;
+    //         let ye = y + (dist * a.sin() * TILE_SIZE as f32) as i32;
+    //         screen.draw_line(x, y, 
+    //             xe, ye, 
+    //             Color::YELLOW);
+    //         screen.draw_circle(xe, ye, 
+    //             2.0, Color::RED)
+    //     }
+    //     let radius = s::PLAYER_RADIUS * TILE_SIZE as f32;
+    //     screen.draw_circle(x, y, 
+    //         radius, 
+    //         Color::RED)
+    // }
 }
