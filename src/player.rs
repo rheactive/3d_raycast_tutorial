@@ -1,6 +1,6 @@
-use raylib::prelude::*;
+use tetra::{Context};
+use tetra::input::{self, Key};
 
-//use crate::raycasting;
 use crate::settings as s;
 use crate::map;
 
@@ -16,8 +16,8 @@ fn round_anlge (a: f32) -> f32 {
 }
 
 pub fn get_cell (x: f32, y: f32) -> (i32, i32) {
-    let cell_x = x as i32;
-    let cell_y = y as i32;
+    let cell_x = f32::trunc(x) as i32;
+    let cell_y = f32::trunc(y) as i32;
     (cell_x, cell_y)
 }
 
@@ -73,26 +73,22 @@ impl Player {
         }
     }
 
-    pub fn movement (&mut self, map: &map::Map, dt: f32, rl: &RaylibHandle) {
+    pub fn movement (&mut self, map: &map::Map, ctx: &Context) {
         let sin_a = self.angle.sin();
         let cos_a = self.angle.cos();
         let mut dx: f32 = 0.0;
         let mut dy: f32 = 0.0;
-        let speed = s::PLAYER_SPEED * dt;
+        let speed = s::PLAYER_SPEED;
         let speed_sin = speed * sin_a;
         let speed_cos = speed * cos_a;
 
-        //let mouse_x = rl.get_mouse_x() as f32;
-        //let mouse_off = (rl.get_mouse_x() - s::HALF_WIDTH) as f32;
-        //let mouse_rot = mouse_off / s::HALF_WIDTH as f32;
-
         let keys: [bool; 6] = [
-            rl.is_key_down(KeyboardKey::KEY_W),
-            rl.is_key_down(KeyboardKey::KEY_S),
-            rl.is_key_down(KeyboardKey::KEY_A),
-            rl.is_key_down(KeyboardKey::KEY_D),
-            rl.is_key_down(KeyboardKey::KEY_LEFT),
-            rl.is_key_down(KeyboardKey::KEY_RIGHT)
+            input::is_key_down(ctx, Key::W),
+            input::is_key_down(ctx, Key::S),
+            input::is_key_down(ctx, Key::A),
+            input::is_key_down(ctx, Key::D),
+            input::is_key_down(ctx, Key::Left),
+            input::is_key_down(ctx, Key::Right)
         ];
 
         if keys[0] {
@@ -118,45 +114,31 @@ impl Player {
         if !check_wall(self.x + dx, self.y + dy, &map) {
             self.x += dx;
             self.y += dy;
+        } else {
+            if !check_wall(self.x + dx, self.y, &map) {
+                self.x += dx;
+            } else {
+                if !check_wall(self.x, self.y + dy, &map) {
+                    self.y += dy;
+                }
+            }
         }
 
         if keys[4] {
-            self.angle += - s::PLAYER_ROT_SPEED * dt
+            self.angle += - s::PLAYER_ROT_SPEED
         }
 
         if keys[5] {
-            self.angle += s::PLAYER_ROT_SPEED * dt
+            self.angle += s::PLAYER_ROT_SPEED
         }
-
-        //self.angle += s::PLAYER_ROT_SPEED * dt * mouse_rot / (0.1 + mouse_rot.abs());
 
         self.angle = round_anlge(self.angle)
 
     }
 
-    pub fn update (&mut self, map: &map::Map, dt: f32, rl: &RaylibHandle) {
-        self.movement(&map, dt, &rl)
+    pub fn update (&mut self, map: &map::Map, ctx: &Context) {
+        self.movement(&map, &ctx)
         
     }
 
-    // pub fn draw (&self, screen: &mut RaylibDrawHandle, map: &map::Map) {
-    //     let x = (self.x * TILE_SIZE as f32) as i32;
-    //     let y = (self.y * TILE_SIZE as f32) as i32;
-    //     let rays = ray_cast(&self, &map);
-    //     for ray in rays {
-    //         let dist = ray.distance;
-    //         let a = ray.angle;
-    //         let xe = x + (dist * a.cos() * TILE_SIZE as f32) as i32;
-    //         let ye = y + (dist * a.sin() * TILE_SIZE as f32) as i32;
-    //         screen.draw_line(x, y, 
-    //             xe, ye, 
-    //             Color::YELLOW);
-    //         screen.draw_circle(xe, ye, 
-    //             2.0, Color::RED)
-    //     }
-    //     let radius = s::PLAYER_RADIUS * TILE_SIZE as f32;
-    //     screen.draw_circle(x, y, 
-    //         radius, 
-    //         Color::RED)
-    // }
 }

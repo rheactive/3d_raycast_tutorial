@@ -7,7 +7,8 @@ pub struct Ray {
     pub angle: f32,
     pub distance: f32,
     pub height: f32,
-    pub tile: u16
+    pub tile: u16,
+    pub offset: f32
 }
 
 impl Ray {
@@ -16,7 +17,8 @@ impl Ray {
             angle: angle,
             distance: 0.0,
             height: 0.0,
-            tile: 0
+            tile: 0,
+            offset: 0.0
         }
     }
 }
@@ -33,6 +35,9 @@ pub fn ray_cast (player: &p::Player, map: &m::Map) -> Vec<Ray> {
         let sin_a = a.sin();
 
         let mut ray = Ray::new(a);
+
+        let mut tile_hor: u16 = 0;
+        let mut tile_vert: u16 = 0;
 
         // horizontals
         let (mut y_hor, dy) = if sin_a > 0.0 {
@@ -55,7 +60,7 @@ pub fn ray_cast (player: &p::Player, map: &m::Map) -> Vec<Ray> {
             for tile in &map.tiles {
                 if tile.1 == x_cell 
                 && tile.2 == y_cell {
-                    ray.tile = tile.0;
+                    tile_hor = tile.0;
                     check = true
                 }
             }
@@ -88,7 +93,7 @@ pub fn ray_cast (player: &p::Player, map: &m::Map) -> Vec<Ray> {
             for tile in &map.tiles {
                 if tile.1 == x_cell 
                 && tile.2 == y_cell {
-                    ray.tile = tile.0;
+                    tile_vert = tile.0;
                     check = true
                 }
             }
@@ -101,18 +106,29 @@ pub fn ray_cast (player: &p::Player, map: &m::Map) -> Vec<Ray> {
             
         }
 
+        let screen_dist: f32 = s::HALF_WIDTH / s::HALF_FOV.tan();
+
         // compare distances
-        let dist: f32 = if dist_vert > dist_hor {
-            dist_hor * (a - player.angle).cos()
+        if dist_vert > dist_hor {
+            ray.distance = dist_hor * (a - player.angle).cos();
+            ray.tile = tile_hor;
+            ray.height = screen_dist / (ray.distance + s::TOL);
+            ray.offset = if cos_a > 0.0 {
+                y_vert - f32::trunc(y_vert)
+            } else {
+                1.0 - y_vert + f32::trunc(y_vert)
+            }
         } else {
-            dist_vert * (a - player.angle).cos()
+            ray.distance = dist_vert * (a - player.angle).cos();
+            ray.tile = tile_vert;
+            ray.height = screen_dist / (ray.distance + s::TOL);
+            ray.offset = if sin_a > 0.0 {
+                1.0 - x_hor + f32::trunc(x_hor)
+            } else {
+                x_hor - f32::trunc(x_hor)
+            }
         };
 
-        let screen_dist: f32 = s::HALF_WIDTH as f32 / s::HALF_FOV.tan();
-        let proj_height: f32 = screen_dist / (dist + s::TOL);
-
-        ray.distance = dist;
-        ray.height = proj_height;
         rays.push(ray);
 
         a = a + s::DA;
