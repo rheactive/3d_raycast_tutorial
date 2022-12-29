@@ -19,15 +19,15 @@ pub const PLAYER_SPEED: f32 = 0.04;
 pub const PLAYER_ROT_SPEED: f32 = 0.05;
 pub const PLAYER_RADIUS: f32 = 0.1;
 
-pub const PLAYER_FOV: f32 = PI / 3.0;
+pub const PLAYER_FOV: f32 = PI / 2.5;
 pub const HALF_FOV: f32 = PLAYER_FOV / 2.0;
 
-pub const SCALE: f32 = 2.0;
+pub const SCALE: f32 = 4.0;
 pub const RAY_NUMBER: usize = (RES.0 / SCALE) as usize;
 pub const DA: f32 = PLAYER_FOV / (RAY_NUMBER as f32);
 pub const MAX_DIST: f32 = 20.0;
 pub const TOL: f32 = 0.0001;
-pub const TEXTURE_SIZE: f32 = 256.0;
+pub const TEXTURE_SIZE: f32 = 512.0;
 //pub const HALF_TEXTURE: f32 = TEXTURE_SIZE / 2.0;
 
 

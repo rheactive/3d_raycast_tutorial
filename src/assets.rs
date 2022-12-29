@@ -11,7 +11,7 @@ impl Assets {
     pub fn load (ctx: &mut Context) -> Assets {
         let font = 
         VectorFontBuilder::new("./resources/brohoney.ttf").unwrap()
-        .with_size(ctx, 35.0).unwrap();
+        .with_size(ctx, 40.0).unwrap();
 
         let wall_textures = vec![
             Texture::new(ctx, "./resources/textures/1.png").unwrap(),

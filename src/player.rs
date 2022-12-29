@@ -73,7 +73,9 @@ impl Player {
         }
     }
 
-    pub fn movement (&mut self, map: &map::Map, ctx: &Context) {
+    pub fn movement (&mut self, map: &map::Map, ctx: &Context) -> bool {
+        let mut moved = false;
+
         let sin_a = self.angle.sin();
         let cos_a = self.angle.cos();
         let mut dx: f32 = 0.0;
@@ -111,18 +113,22 @@ impl Player {
             dy += speed_cos
         }
 
-        if !check_wall(self.x + dx, self.y + dy, &map) {
-            self.x += dx;
-            self.y += dy;
-        } else {
-            if !check_wall(self.x + dx, self.y, &map) {
+        if keys != [false; 6] {
+            moved = true;
+            if !check_wall(self.x + dx, self.y + dy, &map) {
                 self.x += dx;
+                self.y += dy;
             } else {
-                if !check_wall(self.x, self.y + dy, &map) {
-                    self.y += dy;
+                if !check_wall(self.x + dx, self.y, &map) {
+                    self.x += dx;
+                } else {
+                    if !check_wall(self.x, self.y + dy, &map) {
+                        self.y += dy;
+                    }
                 }
             }
         }
+        
 
         if keys[4] {
             self.angle += - s::PLAYER_ROT_SPEED
@@ -132,11 +138,13 @@ impl Player {
             self.angle += s::PLAYER_ROT_SPEED
         }
 
-        self.angle = round_anlge(self.angle)
+        self.angle = round_anlge(self.angle);
+
+        moved
 
     }
 
-    pub fn update (&mut self, map: &map::Map, ctx: &Context) {
+    pub fn update (&mut self, map: &map::Map, ctx: &Context) -> bool {
         self.movement(&map, &ctx)
         
     }

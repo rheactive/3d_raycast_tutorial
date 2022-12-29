@@ -24,6 +24,7 @@ impl Ray {
 }
 
 pub fn ray_cast (player: &p::Player, map: &m::Map) -> Vec<Ray> {
+    let screen_dist: f32 = s::HALF_WIDTH / s::HALF_FOV.tan();
     let x = player.x;
     let y = player.y;
     let (cell_x, cell_y) = get_cell(x, y);
@@ -46,10 +47,10 @@ pub fn ray_cast (player: &p::Player, map: &m::Map) -> Vec<Ray> {
             (cell_y as f32 - s::TOL, -1.0)
         };
 
-        let mut dist_hor = ((y_hor - y + s::TOL) / sin_a).abs();
+        let mut dist_hor = (y_hor - y) / sin_a;
         let mut x_hor = x + dist_hor * cos_a;
 
-        let d_dist = (dy / sin_a).abs();
+        let d_dist = dy / sin_a;
         let dx = d_dist * cos_a;
 
         let mut check = false;
@@ -79,10 +80,10 @@ pub fn ray_cast (player: &p::Player, map: &m::Map) -> Vec<Ray> {
             (cell_x as f32 - s::TOL, -1.0)
         };
 
-        let mut dist_vert = ((x_vert - x) / cos_a).abs();
+        let mut dist_vert = (x_vert - x) / cos_a;
         let mut y_vert = y + dist_vert * sin_a;
 
-        let d_dist = (dx / cos_a).abs();
+        let d_dist = dx / cos_a;
         let dy = d_dist * sin_a;
 
         let mut check = false;
@@ -106,32 +107,33 @@ pub fn ray_cast (player: &p::Player, map: &m::Map) -> Vec<Ray> {
             
         }
 
-        let screen_dist: f32 = s::HALF_WIDTH / s::HALF_FOV.tan();
+        let delta_a: f32 = player.angle - a;
 
         // compare distances
         if dist_vert > dist_hor {
-            ray.distance = dist_hor * (a - player.angle).cos();
+            ray.distance = dist_hor * delta_a.cos();
             ray.tile = tile_hor;
             ray.height = screen_dist / (ray.distance + s::TOL);
-            ray.offset = if cos_a > 0.0 {
-                y_vert - f32::trunc(y_vert)
+            if cos_a > 0.0 {
+                ray.offset = f32::fract(y_vert)
             } else {
-                1.0 - y_vert + f32::trunc(y_vert)
+                ray.offset = 1.0 - f32::fract(y_vert)
             }
         } else {
-            ray.distance = dist_vert * (a - player.angle).cos();
+            ray.distance = dist_vert * delta_a.cos();
             ray.tile = tile_vert;
             ray.height = screen_dist / (ray.distance + s::TOL);
-            ray.offset = if sin_a > 0.0 {
-                1.0 - x_hor + f32::trunc(x_hor)
+            if sin_a > 0.0 {
+                ray.offset = 1.0 - f32::fract(x_hor)
             } else {
-                x_hor - f32::trunc(x_hor)
+                ray.offset = f32::fract(x_hor)
             }
         };
 
         rays.push(ray);
 
-        a = a + s::DA;
+        a += s::DA;
+        
     }
     rays
 
