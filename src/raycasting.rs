@@ -113,21 +113,22 @@ pub fn ray_cast (player: &p::Player, map: &m::Map) -> Vec<Ray> {
         if dist_vert > dist_hor {
             ray.distance = dist_hor * delta_a.cos();
             ray.tile = tile_hor;
-            ray.height = screen_dist / (ray.distance + s::TOL);
-            if cos_a > 0.0 {
-                ray.offset = f32::fract(y_vert)
-            } else {
-                ray.offset = 1.0 - f32::fract(y_vert)
-            }
-        } else {
-            ray.distance = dist_vert * delta_a.cos();
-            ray.tile = tile_vert;
-            ray.height = screen_dist / (ray.distance + s::TOL);
+            ray.height = screen_dist / ray.distance;
             if sin_a > 0.0 {
                 ray.offset = 1.0 - f32::fract(x_hor)
             } else {
                 ray.offset = f32::fract(x_hor)
             }
+        } else {
+            ray.distance = dist_vert * delta_a.cos();
+            ray.tile = tile_vert;
+            ray.height = screen_dist / ray.distance;
+            if cos_a > 0.0 {
+                ray.offset = f32::fract(y_vert)
+            } else {
+                ray.offset = 1.0 - f32::fract(y_vert)
+            }
+            
         };
 
         rays.push(ray);
