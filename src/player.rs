@@ -1,7 +1,7 @@
 use tetra::{Context};
 use tetra::input::{self, Key};
 
-use crate::settings as s;
+use crate::settings::{self as s};
 use crate::map;
 
 fn round_anlge (a: f32) -> f32 {
@@ -84,13 +84,11 @@ impl Player {
         let speed_sin = speed * sin_a;
         let speed_cos = speed * cos_a;
 
-        let keys: [bool; 6] = [
+        let keys: [bool; 4] = [
             input::is_key_down(ctx, Key::W),
             input::is_key_down(ctx, Key::S),
             input::is_key_down(ctx, Key::A),
-            input::is_key_down(ctx, Key::D),
-            input::is_key_down(ctx, Key::Left),
-            input::is_key_down(ctx, Key::Right)
+            input::is_key_down(ctx, Key::D)
         ];
 
         if keys[0] {
@@ -104,16 +102,14 @@ impl Player {
         }
 
         if keys[2] {
-            dx += speed_sin;
-            dy += -speed_cos
+            self.angle += - s::PLAYER_ROT_SPEED
         }
 
         if keys[3] {
-            dx += -speed_sin;
-            dy += speed_cos
+            self.angle += s::PLAYER_ROT_SPEED
         }
 
-        if keys != [false; 6] {
+        if keys != [false; 4] {
             moved = true;
             if !check_wall(self.x + dx, self.y + dy, &map) {
                 self.x += dx;
@@ -128,17 +124,9 @@ impl Player {
                 }
             }
         }
-        
 
-        if keys[4] {
-            self.angle += - s::PLAYER_ROT_SPEED
-        }
 
-        if keys[5] {
-            self.angle += s::PLAYER_ROT_SPEED
-        }
-
-        self.angle = round_anlge(self.angle);
+       self.angle = round_anlge(self.angle);
 
         moved
 

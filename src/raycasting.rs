@@ -1,3 +1,5 @@
+use tetra::math::Vec2;
+
 use crate::player::get_cell;
 use crate::settings as s;
 use crate::map as m;
@@ -31,7 +33,7 @@ pub fn ray_cast (player: &p::Player, map: &m::Map) -> Vec<Ray> {
     let mut a = player.angle - s::HALF_FOV + s::TOL;
     let mut rays: Vec<Ray> = Vec::new();
 
-    for _k in 0..s::RAY_NUMBER {
+    for k in 0..s::RAY_NUMBER {
         let cos_a = a.cos();
         let sin_a = a.sin();
 
@@ -133,10 +135,105 @@ pub fn ray_cast (player: &p::Player, map: &m::Map) -> Vec<Ray> {
 
         rays.push(ray);
 
-        a += s::DA;
+        let q = s::SCALE / screen_dist;
+
+        let da1 = q * delta_a.cos().powf(2.0);
+        let da2 = da1 / (1.0 + q * (2.0 * delta_a).sin().abs());
+
+        if k < s::RAY_NUMBER / 2 {
+            a += da1
+        } else {
+            a += da2
+        }
         
     }
+
     rays
 
 }
 
+// FLOOR
+
+pub struct RayFloor {
+    pub uv11: Vec2<f32>,
+    pub uv12: Vec2<f32>,
+    pub uv21: Vec2<f32>,
+    pub uv22: Vec2<f32>,
+    pub width: f32,
+    pub height: f32
+}
+
+impl RayFloor {
+    pub fn new () -> RayFloor {
+        RayFloor {
+            uv11: Vec2::zero(),
+            uv12: Vec2::zero(),
+            uv21: Vec2::zero(),
+            uv22: Vec2::zero(),
+            width: 1.0,
+            height: 1.0
+        }
+    }
+}
+
+
+pub fn floor_cast (player: &p::Player) -> Vec<RayFloor> {
+    let mut rays_floor = Vec::new();
+
+    let screen_dist: f32 = 1.0;
+    let half_width: f32 = screen_dist * s::HALF_FOV.tan();
+    let half_height: f32 = half_width / s::WIDTH * s::HEIGHT;
+    let scale: f32 = s::SCALE * half_height / s::HALF_HEIGHT;
+
+    let player_pos = Vec2::new(player.x, player.y);
+    let a = player.angle;
+    let cos_a = a.cos();
+    let sin_a = a.sin();
+
+    let min_ray_depth = screen_dist / half_height * s::PLAYER_Z;
+
+    let mut ray_depth = min_ray_depth;
+
+    let mut ray_screen_height = 0f32;
+
+    while ray_depth < s::MAX_DIST {
+        let mut ray = RayFloor::new();
+
+        ray_screen_height = ray_screen_height + scale;
+
+        let texture_height = screen_dist 
+            / (half_height - ray_screen_height) * s::PLAYER_Z - ray_depth;
+
+        let texture_half_width: f32 = half_width / screen_dist 
+            * (ray_depth + texture_height / 2.0);
+
+        let ray_dir1 = Vec2::new(
+                ray_depth * cos_a, 
+                ray_depth * sin_a
+            );
+        let ray_dir2 = Vec2::new(
+            (ray_depth + texture_height) * cos_a, 
+            (ray_depth + texture_height) * sin_a
+            );
+
+        let perp_dir = Vec2::new(
+            texture_half_width * sin_a, 
+            - texture_half_width * cos_a
+        );
+
+        ray.uv11 = (player_pos + ray_dir2 + perp_dir) / s::FLOOR_SIZE;
+        ray.uv12 = (player_pos + ray_dir2 - perp_dir) / s::FLOOR_SIZE;
+        ray.uv21 = (player_pos + ray_dir1 + perp_dir) / s::FLOOR_SIZE;
+        ray.uv22 = (player_pos + ray_dir1 - perp_dir) / s::FLOOR_SIZE;
+        ray.width = 2.0 * texture_half_width;
+        ray.height = texture_height;
+
+        rays_floor.push(ray);
+
+        ray_depth = ray_depth + texture_height;
+    }
+
+
+
+    rays_floor
+}

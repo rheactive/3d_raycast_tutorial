@@ -5,6 +5,7 @@ use tetra::graphics::text::{Font, VectorFontBuilder};
 pub struct Assets {
     pub wall_textures: Vec<Texture>,
     pub font: Font,
+    pub back_textures: Vec<Texture>
 }
 
 impl Assets {
@@ -17,13 +18,17 @@ impl Assets {
             Texture::new(ctx, "./resources/textures/1.png").unwrap(),
             Texture::new(ctx, "./resources/textures/2.png").unwrap(),
             Texture::new(ctx, "./resources/textures/3.png").unwrap(),
-            Texture::new(ctx, "./resources/textures/4.png").unwrap(),
-            Texture::new(ctx, "./resources/textures/5.png").unwrap(),
+        ];
+
+        let back_textures = vec![
+            Texture::new(ctx, "./resources/textures/sky.png").unwrap(),
+            Texture::new(ctx, "./resources/textures/floor_huge_3.png").unwrap(),
         ];
 
         Assets {
             wall_textures,
-            font
+            font,
+            back_textures
         }
     }
 }
