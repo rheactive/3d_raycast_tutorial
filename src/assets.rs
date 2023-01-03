@@ -22,7 +22,7 @@ impl Assets {
 
         let back_textures = vec![
             Texture::new(ctx, "./resources/textures/sky.png").unwrap(),
-            Texture::new(ctx, "./resources/textures/floor_huge_3.png").unwrap(),
+            Texture::new(ctx, "./resources/textures/floor_huge.png").unwrap(),
         ];
 
         Assets {

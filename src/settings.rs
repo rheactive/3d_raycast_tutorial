@@ -19,12 +19,12 @@ pub const PLAYER_RADIUS: f32 = 0.25;
 pub const PLAYER_FOV: f32 = PI / 2.5;
 pub const HALF_FOV: f32 = PLAYER_FOV / 2.0;
 
-pub const SCALE: f32 = 4.0;
+pub const SCALE: f32 = 1.0;
 pub const RAY_NUMBER: usize = (WIDTH / SCALE) as usize;
 // pub const DA: f32 = PLAYER_FOV / (RAY_NUMBER as f32);
 pub const MAX_DIST: f32 = 20.0;
 pub const TOL: f32 = 0.0001;
-pub const TILE_TEXTURE_SIZE: f32 = 512.0;
+pub const TILE_TEXTURE_SIZE: f32 = 64.0;
 
 pub const FLOOR_SIZE: f32 = MAP_WIDTH as f32;
 pub const PLAYER_Z: f32 = 0.5;
